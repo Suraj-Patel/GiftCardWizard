@@ -1,0 +1,46 @@
+<!doctype html>
+<html>
+  <head>
+    <title>Gift Card Wizard</title>
+    <link rel="stylesheet" type="text/css" href="../css/bootstrap/bootstrap.min.css">
+    <link rel="stylesheet" type="text/css" href="../css/main.css">    
+    <script src="../scripts/main.js"></script>
+    <script src="../scripts/bootstrap/bootstrap.bundle.min.js"></script>
+  </head>
+  <body>
+    <header class="h1 d-flex flex-wrap justify-content-center py-3">
+        Gift Card Wizard
+    </header>
+    <div class="container">
+      <div class="row mb-2">
+        <ul class="nav nav-tabs" id="tabs" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="myCardsTab" data-bs-toggle="tab" data-bs-target="#myCardsTabPane" type="button" role="tab" aria-controls="myCardsTabPane" aria-selected="true">My Cards</button>
+          </li>
+          <li>
+            <button class="nav-link" id="addCardTab" data-bs-toggle="tab" data-bs-target="#addCardTabPane" type="button" role="tab" aria-controls="addCardTabPane" aria-selected="false">Add New Card</button>
+          </li>
+        </ul>
+      </div>
+      <div class="tab-content mb-4" id="myTabContent">
+        <div class="tab-pane fade show active" id="myCardsTabPane" role="tabpanel" aria-labelledby="myCardsTab" tabindex="0">
+          <div class="container text-left">
+            <div class="accordion" id="currentGiftCards">
+            </div>
+          </div>
+        </div>
+        <div class="tab-pane fade" id="addCardTabPane" role="tabpanel" aria-labelledby="addCardTab" tabindex="0">
+          <form class="container" id="addCardForm">
+            <input id="companyNameInput" name="companyNameInput" type="text" class="form-control required" placeholder="Company Name">
+            <input id="cardNumberInput" name="cardNumberInput" type="text" class="form-control required" placeholder="Gift Card Number">
+            <input id="pinInput" name="pinInput" type="text" class="form-control required" placeholder="PIN">
+            <input id="redeemSiteInput" name="redeemSiteInput" type="text" class="form-control" placeholder="Website to redeem">
+            <div class="row mt-2">
+              <button id="addCardInfoButton" type="submit" class="btn btn-primary float-right">Add</button>            
+            </div>
+          </form>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
