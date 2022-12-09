@@ -4,6 +4,7 @@
     <title>Gift Card Wizard</title>
     <link rel="stylesheet" type="text/css" href="../css/bootstrap/bootstrap.min.css">
     <link rel="stylesheet" type="text/css" href="../css/main.css">    
+    <link rel="stylesheet" type="text/css" href="../css/all.min.css">    
     <script src="../scripts/main.js"></script>
     <script src="../scripts/bootstrap/bootstrap.bundle.min.js"></script>
   </head>
@@ -30,10 +31,10 @@
           </div>
         </div>
         <div class="tab-pane fade" id="addCardTabPane" role="tabpanel" aria-labelledby="addCardTab" tabindex="0">
-          <form class="container" id="addCardForm">
-            <input id="companyNameInput" name="companyNameInput" type="text" class="form-control required" placeholder="Company Name">
-            <input id="cardNumberInput" name="cardNumberInput" type="text" class="form-control required" placeholder="Gift Card Number">
-            <input id="pinInput" name="pinInput" type="text" class="form-control required" placeholder="PIN">
+          <form class="container" id="addCardForm" autocomplete="off">
+            <input id="companyNameInput" name="companyNameInput" type="text" class="form-control" placeholder="Company Name" required>
+            <input id="cardNumberInput" name="cardNumberInput" type="text" class="form-control" placeholder="Gift Card Number" required>
+            <input id="pinInput" name="pinInput" type="text" class="form-control" placeholder="PIN" required>
             <input id="redeemSiteInput" name="redeemSiteInput" type="text" class="form-control" placeholder="Website to redeem">
             <div class="row mt-2">
               <button id="addCardInfoButton" type="submit" class="btn btn-primary float-right">Add</button>            

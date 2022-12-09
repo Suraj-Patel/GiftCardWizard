@@ -1,15 +1,22 @@
 //Run
 const userGiftCardsChromeStorageKey = "userGiftCards";
-const userGiftCardData = {}
+// const userGiftCardData = {}
 
-const l = function(message) {
+const l = function (message) {
   console.log('Log:', message);
 }
 
-const getObjectFromChromeSessionStorage = async function(key) {
+const createDivElement = function () {
+  return document.createElement("div");
+}
+
+const getObjectFromChromeSessionStorage = async function (key) {
   return new Promise((resolve, reject) => {
     try {
-      chrome.storage.session.get([key]).then((result) => {
+      chrome.storage.local.get([key]).then((result) => {
+
+        l("Chrome storage data: " + JSON.stringify(result))
+
         resolve(result[key]);
         l("Retreived value: " + result[key] + " for key: " + key + " from chrome storage");
       });
@@ -19,11 +26,10 @@ const getObjectFromChromeSessionStorage = async function(key) {
   });
 };
 
-const saveObjectInChromeSessionStorage = async function(key, value) {
+const saveObjectInChromeSessionStorage = async function (key, value) {
   return new Promise((resolve, reject) => {
     try {
-      //The object name used as key in the set function should match the value of "userGiftCardsChromeStorageKey" declared at the top      
-      chrome.storage.session.set({[key]: JSON.stringify(value)}).then(() => {
+      chrome.storage.local.set({ [key]: JSON.stringify(value) }).then(() => {
         l("Setting following value to chrome storage: " + JSON.stringify(value) +
           " for key: " + key);
         resolve();
@@ -34,36 +40,71 @@ const saveObjectInChromeSessionStorage = async function(key, value) {
   });
 };
 
-const loadSampleData = async function() {
+const removeObjectFromLocalStorage = async function (keys) {
+  return new Promise((resolve, reject) => {
+    try {
+      chrome.storage.local.remove(keys, function () {
+        resolve();
+      });
+    } catch (ex) {
+      reject(ex);
+    }
+  });
+};
+
+const refreshIndexes = async function() {
+  l("Refreshing indexes");
+  let index = 0;
+  let currentUserGiftCards = await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey);
+  if (currentUserGiftCards) {
+    let currentUserGiftCardsJson = JSON.parse(currentUserGiftCards);
+    currentUserGiftCardsJson.forEach((element) => {
+      element.Index = index;
+      index += 1;
+    });
+    await saveObjectInChromeSessionStorage(userGiftCardsChromeStorageKey, currentUserGiftCardsJson);
+  }
+  await showStoredCards();
+  setBehaviors();
+}
+
+const loadSampleData = async function () {
   let userGiftCards = {};
   await fetch('../data/sample_card_data.json')
-  . then(response => response.text())
-  . then(data => {
-    l("Reading card data from local file.");  
-    userGiftCards = JSON.parse(data).Cards;
-  });
+    .then(response => response.text())
+    .then(data => {
+      l("Reading card data from local file.");
+      userGiftCards = JSON.parse(data).Cards;
+    });
   await saveObjectInChromeSessionStorage(userGiftCardsChromeStorageKey, userGiftCards);
 }
 
 window.onload = onWindowLoad;
 
 async function onWindowLoad() {
-  await loadSampleData();
-  await showStoredCards();
-  setAddCardOnSubmitBehaviors();
+  // await loadSampleData();
+  // await removeObjectFromLocalStorage(userGiftCardsChromeStorageKey);
+  await refreshIndexes();
 }
 
 async function showStoredCards() {
-    let currentUserGiftCards = JSON.parse(await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey));
-    currentUserGiftCards.forEach((element, index) => {
-      document.getElementById("currentGiftCards").appendChild(
-        getAccordionItemWithCardInfo(element, index));
+  l("Loading saved data on home tab");
+  let currentUserGiftCards = await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey);
+  if (currentUserGiftCards) {
+    let currentUserGiftCardsJson = JSON.parse(currentUserGiftCards);
+    let userGiftCardsNode = document.getElementById("currentGiftCards");
+    userGiftCardsNode.innerHTML = "";
+    currentUserGiftCardsJson.forEach((element) => {
+      userGiftCardsNode.appendChild(
+        getAccordionItemWithCardInfo(element));
     });
+  }
 }
 
-function getAccordionItemWithCardInfo(cardInfo, index) {
+//Create accordion item html node.
+function getAccordionItemWithCardInfo(cardInfo) {
 
-  let indexStr = JSON.stringify(index);
+  let indexStr = cardInfo.Index.toString();
   let headerId = 'heading' + indexStr;
   let collapseDivId = 'collapse' + indexStr;
 
@@ -72,20 +113,38 @@ function getAccordionItemWithCardInfo(cardInfo, index) {
 
   let accordionHeader = document.createElement("h2");
   {
-    accordionHeader.className = "accordion-header";
+    accordionHeader.classList.add("accordion-header", "d-flex");
     accordionHeader.id = headerId;
 
-    let accordionHeaderButton = document.createElement("button");
+    let accordionHeaderCollapseButton = document.createElement("button");
+    accordionHeaderCollapseButton.classList.add("accordion-button", "collapsed");
+    accordionHeaderCollapseButton.setAttribute("type", "button");
+    accordionHeaderCollapseButton.setAttribute("data-bs-toggle", "collapse");
+    accordionHeaderCollapseButton.setAttribute("data-bs-target", "#" + collapseDivId);
+    accordionHeaderCollapseButton.setAttribute("aria-expanded", "true");
+    accordionHeaderCollapseButton.setAttribute("aria-controls", collapseDivId);
+    accordionHeaderCollapseButton.innerText = cardInfo.Name;
+    accordionHeader.appendChild(accordionHeaderCollapseButton);
+
+    let accordionHeaderEditButton = document.createElement("button");
+    accordionHeaderEditButton.id = "EditButton_" + indexStr;
     {
-      accordionHeaderButton.classList.add("accordion-button", "collapsed");
-      accordionHeaderButton.setAttribute("type", "button");
-      accordionHeaderButton.setAttribute("data-bs-toggle", "collapse"); 
-      accordionHeaderButton.setAttribute("data-bs-target", "#" + collapseDivId);
-      accordionHeaderButton.setAttribute("aria-expanded", "true");
-      accordionHeaderButton.setAttribute("aria-controls", collapseDivId);
-      accordionHeaderButton.innerText = cardInfo.Name;
+      let accordionEditButtonIcon = document.createElement("i");
+      accordionEditButtonIcon.id = "EditButtonIcon_" + indexStr;
+      accordionEditButtonIcon.classList.add("fa-solid", "fa-pen");
+      accordionHeaderEditButton.appendChild(accordionEditButtonIcon);
     }
-    accordionHeader.appendChild(accordionHeaderButton);
+    accordionHeader.appendChild(accordionHeaderEditButton);
+
+    let accordionHeaderDeleteButton = document.createElement("button");
+    accordionHeaderDeleteButton.id = "DeleteButton_" + indexStr;
+    {
+      let accordionDeleteButtonIcon = document.createElement("i");
+      accordionDeleteButtonIcon.id = "DeleteButtonIcon_" + indexStr;
+      accordionDeleteButtonIcon.classList.add("fa-solid", "fa-trash");
+      accordionHeaderDeleteButton.appendChild(accordionDeleteButtonIcon);
+    }
+    accordionHeader.appendChild(accordionHeaderDeleteButton);
   }
   accordionItem.appendChild(accordionHeader);
 
@@ -101,18 +160,14 @@ function getAccordionItemWithCardInfo(cardInfo, index) {
       accordionBody.className = "accordion-body";
       accordionBody.appendChild(getGiftCardDetail(cardInfo));
     }
-    l("AccordionBody: " + accordionBody);
     accordionCollapse.appendChild(accordionBody);
   }
   accordionItem.appendChild(accordionCollapse);
-  
+
   return accordionItem;
 }
 
-function createDivElement() {
-  return document.createElement("div");
-}
-
+//Create accordion item body HTML node.
 function getGiftCardDetail(cardInfo) {
   let cardDetail = createDivElement();
   let cardNumber = document.createElement("p");
@@ -130,7 +185,7 @@ function getGiftCardDetail(cardInfo) {
   let redeemWebsite = document.createElement("p");
   {
     redeemWebsite.innerText = "Redeem: ";
-    
+
     let redeemWebsiteLink = document.createElement("a");
     {
       redeemWebsiteLink.href = cardInfo.Redeem_Site;
@@ -143,27 +198,86 @@ function getGiftCardDetail(cardInfo) {
   return cardDetail;
 }
 
-function setAddCardOnSubmitBehaviors() {
+function setBehaviors() {
   document.getElementById("addCardForm").addEventListener("submit", saveNewCardInfoToStorage);
+  document.getElementById("myCardsTab").addEventListener("click", showStoredCards);
+
+  //get ALL elements whose ID starts with `DeleteButton_`
+  document.querySelectorAll(`[id^="DeleteButton_"]`).forEach((node) => node.addEventListener("click", deleteGiftCard));
+  document.querySelectorAll(`[id^="fa-trash"]`).forEach((node) => node.addEventListener("click", deleteGiftCard));
 }
 
 async function saveNewCardInfoToStorage(e) {
+
   e.preventDefault();
   let formData = new FormData(e.target);
 
+  let inputData = await extractInputDataFromAddNewCardForm(formData);
+
+  l("User entered: " + JSON.stringify(inputData));
+
+  let currentUserGiftCards = await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey);
+  let currentUserGiftCardsJson = [];
+  if (currentUserGiftCards) {
+    currentUserGiftCardsJson = JSON.parse(currentUserGiftCards);
+  }
+
+  l("Before adding new card: " + JSON.stringify(currentUserGiftCardsJson));
+  currentUserGiftCardsJson.push(inputData);
+
+  await saveObjectInChromeSessionStorage(userGiftCardsChromeStorageKey, currentUserGiftCardsJson);
+  l("After adding new card: " + JSON.stringify(currentUserGiftCardsJson));
+
+  l("Clearing Add Card Form and adding new card to the home tab");
+
+  e.target.reset();
+  showCardSavedConfirmation(inputData);
+  await refreshIndexes();
+}
+
+//Exctract data from add New Card form into an object.
+async function extractInputDataFromAddNewCardForm(formData) {
+  let currentUserGiftCards = await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey);
+
+  let newCardIndex = 0;
+  if (currentUserGiftCards) {
+    let currentUserGiftCardsJson = JSON.parse(currentUserGiftCards);
+    newCardIndex = currentUserGiftCardsJson.length;
+  }
+
+  l("Formdata: " + JSON.stringify(formData));
+
   let inputData = {};
+  inputData["Index"] = newCardIndex;
   inputData["Name"] = formData.get("companyNameInput").trim();
   inputData["Card_Number"] = formData.get("cardNumberInput").trim();
   inputData["PIN"] = formData.get("pinInput").trim();
   inputData["Redeem_Site"] = formData.get("redeemSiteInput").trim();
+  return inputData;
+}
 
-  l("User entered: " + JSON.stringify(inputData));
+function showCardSavedConfirmation(inputData) {
+  alert("Your new Gift Card: '" + inputData.Name + "' has been saved.");
+}
 
-  let currentUserGiftCards = JSON.parse(await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey));
+async function deleteGiftCard(e) {
+  e.preventDefault();
 
-  l("Before adding new card: " + JSON.stringify(currentUserGiftCards));
-  currentUserGiftCards.push(inputData);
+  let deleteBtnId = e.target.id;
+  l("Delete Button ID: " + JSON.stringify(e.target.id));
 
-  l("After adding new card: " + JSON.stringify(currentUserGiftCards));
-  await saveObjectInChromeSessionStorage(userGiftCardsChromeStorageKey, currentUserGiftCards);
+  let giftCardIndexToDelete = parseInt(deleteBtnId.toString().split("_")[1]);
+
+  l("Trying to delete accordion with index: " + giftCardIndexToDelete);
+
+  let currentUserGiftCards = await getObjectFromChromeSessionStorage(userGiftCardsChromeStorageKey);
+  let currentUserGiftCardsJson = JSON.parse(currentUserGiftCards);
+
+  l("Before removing card with Index- " + giftCardIndexToDelete + " :  " + JSON.stringify(currentUserGiftCardsJson));
+  currentUserGiftCardsJson = currentUserGiftCardsJson.filter((card) => card.Index !== giftCardIndexToDelete);
+
+  await saveObjectInChromeSessionStorage(userGiftCardsChromeStorageKey, currentUserGiftCardsJson);
+  l("After removing card with Index- " + giftCardIndexToDelete + " :  " + JSON.stringify(currentUserGiftCardsJson));
+
+  await refreshIndexes();
 }

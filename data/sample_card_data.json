@@ -1,12 +1,14 @@
 {
     "Cards": [
         {
+            "Index": 0,
             "Name": "Card_1",
             "Card_Number": "12345678",
             "PIN": 1234,
             "Redeem_Site": "https://www.google.com"
         },
         {
+            "Index": 1,            
             "Name": "Card_2",
             "Card_Number": "87654321",
             "PIN": 4321,
