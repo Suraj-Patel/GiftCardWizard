@@ -200,7 +200,7 @@ function getGiftCardDetail(cardInfo) {
 
 function setBehaviors() {
   document.getElementById("addCardForm").addEventListener("submit", saveNewCardInfoToStorage);
-  document.getElementById("myCardsTab").addEventListener("click", showStoredCards);
+  document.getElementById("myCardsTab").addEventListener("click", refreshIndexes);
 
   //get ALL elements whose ID starts with `DeleteButton_`
   document.querySelectorAll(`[id^="DeleteButton_"]`).forEach((node) => node.addEventListener("click", deleteGiftCard));
@@ -208,7 +208,6 @@ function setBehaviors() {
 }
 
 async function saveNewCardInfoToStorage(e) {
-
   e.preventDefault();
   let formData = new FormData(e.target);
 
@@ -229,7 +228,6 @@ async function saveNewCardInfoToStorage(e) {
   l("After adding new card: " + JSON.stringify(currentUserGiftCardsJson));
 
   l("Clearing Add Card Form and adding new card to the home tab");
-
   e.target.reset();
   showCardSavedConfirmation(inputData);
   await refreshIndexes();
@@ -264,8 +262,6 @@ async function deleteGiftCard(e) {
   e.preventDefault();
 
   let deleteBtnId = e.target.id;
-  l("Delete Button ID: " + JSON.stringify(e.target.id));
-
   let giftCardIndexToDelete = parseInt(deleteBtnId.toString().split("_")[1]);
 
   l("Trying to delete accordion with index: " + giftCardIndexToDelete);
