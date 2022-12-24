@@ -39,18 +39,9 @@ const saveObjectInChromeSessionStorage = async function (key, value) {
   });
 };
 
-const removeObjectFromLocalStorage = async function (keys) {
-  return new Promise((resolve, reject) => {
-    try {
-      chrome.storage.local.remove(keys, function () {
-        resolve();
-      });
-    } catch (ex) {
-      reject(ex);
-    }
-  });
-};
-
+// This function refreshes the indexes of the data in the storage.
+// It reads data from storage, assigns incremental indices to the cards and saves the list with incremental indexes.
+// This way we avoid duplicate indexes for 2 different items and are able to delete item in an expected, deterministic manner.
 const refreshIndexes = async function() {
   l("Refreshing indexes");
   let index = 0;
@@ -67,6 +58,8 @@ const refreshIndexes = async function() {
   setBehaviors();
 }
 
+
+// Just method to load static data for debugging purpose. Not relevant for user.
 const loadSampleData = async function () {
   let userGiftCards = {};
   await fetch('../data/sample_card_data.json')
@@ -81,8 +74,6 @@ const loadSampleData = async function () {
 window.onload = onWindowLoad;
 
 async function onWindowLoad() {
-  // await loadSampleData();
-  // await removeObjectFromLocalStorage(userGiftCardsChromeStorageKey);
   await refreshIndexes();
 }
 
