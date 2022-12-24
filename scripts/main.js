@@ -1,4 +1,3 @@
-//Run
 const userGiftCardsChromeStorageKey = "userGiftCards";
 // const userGiftCardData = {}
 
@@ -126,22 +125,12 @@ function getAccordionItemWithCardInfo(cardInfo) {
     accordionHeaderCollapseButton.innerText = cardInfo.Name;
     accordionHeader.appendChild(accordionHeaderCollapseButton);
 
-    let accordionHeaderEditButton = document.createElement("button");
-    accordionHeaderEditButton.id = "EditButton_" + indexStr;
-    {
-      let accordionEditButtonIcon = document.createElement("i");
-      accordionEditButtonIcon.id = "EditButtonIcon_" + indexStr;
-      accordionEditButtonIcon.classList.add("fa-solid", "fa-pen");
-      accordionHeaderEditButton.appendChild(accordionEditButtonIcon);
-    }
-    accordionHeader.appendChild(accordionHeaderEditButton);
-
     let accordionHeaderDeleteButton = document.createElement("button");
     accordionHeaderDeleteButton.id = "DeleteButton_" + indexStr;
     {
       let accordionDeleteButtonIcon = document.createElement("i");
       accordionDeleteButtonIcon.id = "DeleteButtonIcon_" + indexStr;
-      accordionDeleteButtonIcon.classList.add("fa-solid", "fa-trash");
+      accordionDeleteButtonIcon.classList.add("fa-regular", "fa-trash-can");
       accordionHeaderDeleteButton.appendChild(accordionDeleteButtonIcon);
     }
     accordionHeader.appendChild(accordionHeaderDeleteButton);
@@ -184,7 +173,7 @@ function getGiftCardDetail(cardInfo) {
 
   let redeemWebsite = document.createElement("p");
   {
-    redeemWebsite.innerText = "Redeem: ";
+    redeemWebsite.innerText = "Redeem on: ";
 
     let redeemWebsiteLink = document.createElement("a");
     {
